@@ -15,28 +15,25 @@ jobs:
       - name: Setup Build Environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison build-essential flex libssl-dev gcc-aarch64-linux-gnu
+          sudo apt-get install -y bc bison build-essential flex libssl-dev gcc-aarch64-linux-gnu zip
 
       - name: Build Kernel
         run: |
           export ARCH=arm64
           export CROSS_COMPILE=aarch64-linux-gnu-
-          # [your_defconfig]を適切なconfig名に変更してください
-          make [your_defconfig] 
+          make exynos9830_defconfig
           make -j$(nproc)
 
       - name: Package with AnyKernel3
         run: |
           git clone https://github.com/osm0sis/AnyKernel3 -b master
-          # ビルドされたカーネルバイナリをAnyKernel3フォルダへコピー
+          # Image.gz-dtb が生成される場所はソースによって異なる場合があります
           cp arch/arm64/boot/Image.gz-dtb AnyKernel3/
-          
-          # AnyKernel3の設定（必要に応じて編集）
           cd AnyKernel3
-          zip -r9 ../Extreme-Kernel-$(date +%Y%m%d).zip *
+          zip -r9 ../Extreme-Kernel-Build.zip *
 
       - name: Upload Zip
         uses: actions/upload-artifact@v4
         with:
-          name: Kernel-Zip
-          path: "*.zip"
+          name: Extreme-Kernel-Zip
+          path: Extreme-Kernel-Build.zip
